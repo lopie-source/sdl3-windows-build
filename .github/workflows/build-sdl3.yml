@@ -35,44 +35,38 @@ jobs:
         cmake --build . --config Release --parallel
     
     - name: Package SDL3
+      shell: pwsh
       run: |
         cd SDL/build
         mkdir sdl3-windows-x64
         mkdir sdl3-windows-x64/lib
         mkdir sdl3-windows-x64/include
         
-        # Copy DLL and import library
         Copy-Item -Path "Release/SDL3.dll" -Destination "sdl3-windows-x64/"
         Copy-Item -Path "Release/SDL3.lib" -Destination "sdl3-windows-x64/lib/"
-        
-        # Copy headers
         Copy-Item -Path "../include/SDL3" -Destination "sdl3-windows-x64/include/" -Recurse
         
-        # Create README
-        @"
-# SDL3 Windows x64 Build
-
-Built on: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss UTC")
+        $readme = @"
+SDL3 Windows x64 Build
+Built on: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')
 Platform: Windows x64
 Build Type: Release (Shared Library)
 
-## Files:
-- SDL3.dll - Shared library (runtime)
-- lib/SDL3.lib - Import library (link-time)
-- include/SDL3/ - Header files
+Files:
+  SDL3.dll - Shared library
+  lib/SDL3.lib - Import library
+  include/SDL3/ - Header files
 
-## Usage:
-1. Copy SDL3.dll to your application directory
-2. Link your project with SDL3.lib
-3. Include SDL3 headers: #include <SDL3/SDL.h>
+Usage:
+  1. Copy SDL3.dll to your application directory
+  2. Link your project with SDL3.lib
+  3. Include SDL3 headers
 
-## Build from source:
-- SDL3 main branch: https://github.com/libsdl-org/SDL
-- Built with Visual Studio 2022, CMake
-"@ | Out-File -FilePath "sdl3-windows-x64/README.txt" -Encoding UTF8
+Built from: https://github.com/libsdl-org/SDL (main branch)
+"@
+        Set-Content -Path "sdl3-windows-x64/README.txt" -Value $readme -Encoding UTF8
         
-        # Get file sizes
-        Get-ChildItem -Path "sdl3-windows-x64" -Recurse -File | Format-Table Name, @{Name="Size (KB)";Expression={[math]::Round($_.Length/1KB,2)}}
+        Get-ChildItem -Path "sdl3-windows-x64" -Recurse -File | Format-Table Name, Length
     
     - name: Upload SDL3 Artifacts
       uses: actions/upload-artifact@v4
@@ -83,12 +77,12 @@ Build Type: Release (Shared Library)
     
     - name: Build Summary
       run: |
-        Write-Output "## SDL3 Build Complete! :rocket:" >> $env:GITHUB_STEP_SUMMARY
+        Write-Output "## SDL3 Build Complete!" >> $env:GITHUB_STEP_SUMMARY
         Write-Output "" >> $env:GITHUB_STEP_SUMMARY
         Write-Output "### Build Info" >> $env:GITHUB_STEP_SUMMARY
-        Write-Output "- **Platform**: Windows x64" >> $env:GITHUB_STEP_SUMMARY
-        Write-Output "- **Build Type**: Release (Shared Library)" >> $env:GITHUB_STEP_SUMMARY
-        Write-Output "- **SDL3 Version**: main branch (latest)" >> $env:GITHUB_STEP_SUMMARY
+        Write-Output "- Platform: Windows x64" >> $env:GITHUB_STEP_SUMMARY
+        Write-Output "- Build Type: Release (Shared Library)" >> $env:GITHUB_STEP_SUMMARY
+        Write-Output "- SDL3 Version: main branch" >> $env:GITHUB_STEP_SUMMARY
         Write-Output "" >> $env:GITHUB_STEP_SUMMARY
-        Write-Output "### Artifacts" >> $env:GITHUB_STEP_SUMMARY
-        Write-Output "Download the SDL3 build artifacts from the Actions tab." >> $env:GITHUB_STEP_SUMMARY
+        Write-Output "### Download" >> $env:GITHUB_STEP_SUMMARY
+        Write-Output "Download the build artifacts from the Actions tab." >> $env:GITHUB_STEP_SUMMARY
