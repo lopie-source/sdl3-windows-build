@@ -82,11 +82,29 @@ jobs:
     - name: Package
       working-directory: SDL/build
       run: |
-        mkdir sdl3-linux-arm64
-        cp libSDL3.so* sdl3-linux-arm64/ 2>/dev/null || cp SDL3-shared/libSDL3.so* sdl3-linux-arm64/ || true
+        mkdir -p sdl3-linux-arm64
+        
+        # Find and copy all SDL3 shared libraries
+        find . -name "libSDL3*.so*" -type f -exec cp {} sdl3-linux-arm64/ \;
+        
+        # Copy headers
         cp -r ../include/SDL3 sdl3-linux-arm64/
-        echo "SDL3 Linux ARM64 build" > sdl3-linux-arm64/README.txt
-        ls -la sdl3-linux-arm64/
+        
+        # Create README
+        echo "SDL3 Linux ARM64 (aarch64) build" > sdl3-linux-arm64/README.txt
+        echo "Cross-compiled on ubuntu-latest with aarch64-linux-gnu-gcc" >> sdl3-linux-arm64/README.txt
+        
+        # List what we packaged
+        echo "Packaged files:"
+        ls -lah sdl3-linux-arm64/
+        
+        # Verify we have the library
+        if [ ! -f sdl3-linux-arm64/libSDL3.so ]; then
+          echo "ERROR: libSDL3.so not found!"
+          echo "Build directory contents:"
+          find . -name "*.so*" -o -name "libSDL3*"
+          exit 1
+        fi
     
     - name: Upload
       uses: actions/upload-artifact@v4
