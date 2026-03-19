@@ -74,10 +74,8 @@ jobs:
           -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
           -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc \
           -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ \
-          -DSDL_VIDEO=OFF \
-          -DSDL_AUDIO=ON \
-          -DSDL_JOYSTICK=ON \
-          -DSDL_HAPTIC=ON
+          -DSDL_X11_SHARED=OFF \
+          -DSDL_WAYLAND_SHARED=OFF
 
     - name: Build
       working-directory: SDL/build
@@ -97,7 +95,7 @@ jobs:
         # Create README
         echo "SDL3 Linux ARM64 (aarch64) build" > sdl3-linux-arm64/README.txt
         echo "Cross-compiled on ubuntu-latest with aarch64-linux-gnu-gcc" >> sdl3-linux-arm64/README.txt
-        echo "Built with VIDEO=OFF (headless), AUDIO=ON, JOYSTICK=ON" >> sdl3-linux-arm64/README.txt
+        echo "Built with X11_SHARED=OFF, WAYLAND_SHARED=OFF (headless cross-compile)" >> sdl3-linux-arm64/README.txt
 
         # List what we packaged
         echo "Packaged files:"
