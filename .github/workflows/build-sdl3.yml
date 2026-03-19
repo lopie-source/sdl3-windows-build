@@ -8,28 +8,28 @@ on:
 jobs:
   build-windows:
     runs-on: windows-latest
-    
+
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-    
+
     - name: Setup CMake
       uses: lukka/get-cmake@latest
-    
+
     - name: Clone SDL3
       run: git clone https://github.com/libsdl-org/SDL.git --branch main --depth 1
-    
+
     - name: Configure
       working-directory: SDL
       run: |
         mkdir build
         cd build
         cmake .. -G "Visual Studio 17 2022" -A x64 -DBUILD_SHARED_LIBS=ON -DSDL_SHARED=ON -DCMAKE_BUILD_TYPE=Release
-    
+
     - name: Build
       working-directory: SDL/build
       run: cmake --build . --config Release --parallel
-    
+
     - name: Package
       working-directory: SDL/build
       run: |
@@ -38,7 +38,7 @@ jobs:
         cp Release/SDL3.lib sdl3-windows-x64/
         cp -r ../include/SDL3 sdl3-windows-x64/
         echo "SDL3 Windows x64 build" > sdl3-windows-x64/README.txt
-    
+
     - name: Upload
       uses: actions/upload-artifact@v4
       with:
@@ -48,19 +48,19 @@ jobs:
 
   build-linux-arm64:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-    
+
     - name: Setup ARM64 toolchain
       run: |
         sudo apt-get update
         sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu cmake
-    
+
     - name: Clone SDL3
       run: git clone https://github.com/libsdl-org/SDL.git --branch main --depth 1
-    
+
     - name: Configure
       working-directory: SDL
       run: |
@@ -73,31 +73,36 @@ jobs:
           -DCMAKE_SYSTEM_NAME=Linux \
           -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
           -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc \
-          -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++
-    
+          -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ \
+          -DSDL_VIDEO=OFF \
+          -DSDL_AUDIO=ON \
+          -DSDL_JOYSTICK=ON \
+          -DSDL_HAPTIC=ON
+
     - name: Build
       working-directory: SDL/build
       run: cmake --build . --parallel
-    
+
     - name: Package
       working-directory: SDL/build
       run: |
         mkdir -p sdl3-linux-arm64
-        
+
         # Find and copy all SDL3 shared libraries
         find . -name "libSDL3*.so*" -type f -exec cp {} sdl3-linux-arm64/ \;
-        
+
         # Copy headers
         cp -r ../include/SDL3 sdl3-linux-arm64/
-        
+
         # Create README
         echo "SDL3 Linux ARM64 (aarch64) build" > sdl3-linux-arm64/README.txt
         echo "Cross-compiled on ubuntu-latest with aarch64-linux-gnu-gcc" >> sdl3-linux-arm64/README.txt
-        
+        echo "Built with VIDEO=OFF (headless), AUDIO=ON, JOYSTICK=ON" >> sdl3-linux-arm64/README.txt
+
         # List what we packaged
         echo "Packaged files:"
         ls -lah sdl3-linux-arm64/
-        
+
         # Verify we have the library
         if [ ! -f sdl3-linux-arm64/libSDL3.so ]; then
           echo "ERROR: libSDL3.so not found!"
@@ -105,7 +110,7 @@ jobs:
           find . -name "*.so*" -o -name "libSDL3*"
           exit 1
         fi
-    
+
     - name: Upload
       uses: actions/upload-artifact@v4
       with:
