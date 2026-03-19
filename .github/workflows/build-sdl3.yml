@@ -27,13 +27,7 @@ jobs:
         cd SDL
         mkdir build
         cd build
-        cmake .. `
-          -G "Visual Studio 17 2022" `
-          -A x64 `
-          -DBUILD_SHARED_LIBS=ON `
-          -DSDL_STATIC=OFF `
-          -DSDL_SHARED=ON `
-          -DCMAKE_BUILD_TYPE=Release
+        cmake .. -G "Visual Studio 17 2022" -A x64 -DBUILD_SHARED_LIBS=ON -DSDL_STATIC=OFF -DSDL_SHARED=ON -DCMAKE_BUILD_TYPE=Release
     
     - name: Build SDL3
       run: |
@@ -98,8 +92,3 @@ Build Type: Release (Shared Library)
         Write-Output "" >> $env:GITHUB_STEP_SUMMARY
         Write-Output "### Artifacts" >> $env:GITHUB_STEP_SUMMARY
         Write-Output "Download the SDL3 build artifacts from the Actions tab." >> $env:GITHUB_STEP_SUMMARY
-        Write-Output "" >> $env:GITHUB_STEP_SUMMARY
-        Write-Output "**Files included**:" >> $env:GITHUB_STEP_SUMMARY
-        Write-Output "- \`SDL3.dll\` - Shared library" >> $env:GITHUB_STEP_SUMMARY
-        Write-Output "- \`lib/SDL3.lib\` - Import library" >> $env:GITHUB_STEP_SUMMARY
-        Write-Output "- \`include/SDL3/\` - Header files" >> $env:GITHUB_STEP_SUMMARY
