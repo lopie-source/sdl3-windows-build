@@ -1,1 +1,47 @@
-bmFtZTogQnVpbGQgU0RMMyBmb3IgV2luZG93cwoKb246CiAgd29ya2Zsb3dfZGlzcGF0Y2g6CiAgcHVzaDoKICAgIGJyYW5jaGVzOiBbIG1haW4gXQoKam9iczoKICBidWlsZDoKICAgIHJ1bnMtb246IHdpbmRvd3MtbGF0ZXN0CiAgICAKICAgIHN0ZXBzOgogICAgLSBuYW1lOiBDaGVja291dAogICAgICB1c2VzOiBhY3Rpb25zL2NoZWNrb3V0QHY0CiAgICAKICAgIC0gbmFtZTogU2V0dXAgQ01ha2UKICAgICAgdXNlczogbHVra2EvZ2V0LWNtYWtlQGxhdGVzdAogICAgCiAgICAtIG5hbWU6IENsb25lIFNETDMKICAgICAgcnVuOiBnaXQgY2xvbmUgaHR0cHM6Ly9naXRodWIuY29tL2xpYnNkbC1vcmcvU0RMLmdpdCAtLWJyYW5jaCBtYWluIC0tZGVwdGggMQogICAgCiAgICAtIG5hbWU6IENvbmZpZ3VyZQogICAgICB3b3JraW5nLWRpcmVjdG9yeTogU0RMCiAgICAgIHJ1bjogfAogICAgICAgIG1rZGlyIGJ1aWxkCiAgICAgICAgY2QgYnVpbGQKICAgICAgICBjbWFrZSAuLiAtRyAiVmlzdWFsIFN0dWRpbyAxNyAyMDIyIiAtQSB4NjQgLURCVUlMRF9TSEFSRURfTElCUz1PTiAtRFNETF9TSEFSRUQ9T04gLURDTUFLRV9CVUlMRF9UWVBFPVJ==
+name: Build SDL3 for Windows
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Setup CMake
+      uses: lukka/get-cmake@latest
+    
+    - name: Clone SDL3
+      run: git clone https://github.com/libsdl-org/SDL.git --branch main --depth 1
+    
+    - name: Configure
+      working-directory: SDL
+      run: |
+        mkdir build
+        cd build
+        cmake .. -G "Visual Studio 17 2022" -A x64 -DBUILD_SHARED_LIBS=ON -DSDL_SHARED=ON -DCMAKE_BUILD_TYPE=Release
+    
+    - name: Build
+      working-directory: SDL/build
+      run: cmake --build . --config Release --parallel
+    
+    - name: Package
+      working-directory: SDL/build
+      run: |
+        mkdir sdl3-win-x64
+        cp Release/SDL3.dll sdl3-win-x64/
+        cp Release/SDL3.lib sdl3-win-x64/
+        cp -r ../include/SDL3 sdl3-win-x64/
+        echo "SDL3 Windows x64 build" > sdl3-win-x64/README.txt
+    
+    - name: Upload
+      uses: actions/upload-artifact@v4
+      with:
+        name: sdl3-windows-x64
+        path: SDL/build/sdl3-win-x64
+        retention-days: 30
